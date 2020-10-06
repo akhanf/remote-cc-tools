@@ -39,12 +39,19 @@ if args.use_login_node == True:
     print('The login node feature is not fully operational yet -- exiting..')
     sys.exit(1)
 
-
-#-- create virtualenv
+#-- setup ssh command
 ssh_cmd = ['ssh',f'{args.user}@{args.host}']
 if args.verbose == True:
         ssh_cmd.extend(['-v','-v','-v'])
 
+#-- check if virtualenv exists, will create if it does not exist
+check_venv =  ssh_cmd + [f'[[ -f {args.venv}/bin/activate  ]]']
+if subprocess.run(check_venv).returncode != 0:
+    print('Virtualenv does not yet exist, will create it')
+    args.create_remote_venv = True
+
+
+#-- create virtualenv
 if (args.create_remote_venv == True):
     #try creating the virtualenv remotely
     print(f'Creating remote virtualenv...')
