@@ -6,16 +6,6 @@ import argparse
 import sys
 
 
-def execute_capture_stderrout(cmd):
-    popen = subprocess.Popen(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE,universal_newlines=True)
-    for stdout_line in iter(popen.stdout.readline, ""):
-        yield stdout_line 
-    popen.stdout.close()
-    return_code = popen.wait()
-    if return_code:
-        raise subprocess.CalledProcessError(return_code, cmd)
-
-
 parser = argparse.ArgumentParser(description='Launches JupyterLab in an interactive compute canada job, creating the required ssh tunnel.')
 
 parser.add_argument('-u','--user',help='Remote server username',required=True)
@@ -104,7 +94,7 @@ else:
 print(' '.join(jupyter_cmd))
 print('')
 
-for line in execute_capture_stderrout(jupyter_cmd):
+for line in subprocess.run(jupyter_cmd, universal_newlines=True, check=True):
 
     if args.verbose == True:
         print(line, end="")
