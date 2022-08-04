@@ -6,6 +6,16 @@ import argparse
 import sys
 
 
+def execute_capture_stderrout(cmd):
+    popen = subprocess.Popen(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE,universal_newlines=True)
+    for stdout_line in iter(popen.stdout.readline, ""):
+         yield stdout_line
+    popen.stdout.close()
+    return_code = popen.wait()
+    if return_code:
+        raise subprocess.CalledProcessError(return_code, cmd)
+
+
 parser = argparse.ArgumentParser(description='Launches JupyterLab in an interactive compute canada job, creating the required ssh tunnel.')
 
 parser.add_argument('-u','--user',help='Remote server username',required=True)
@@ -75,7 +85,7 @@ print('')
 
 
 #set-up regex for capturing host & token
-host_token_regex = '   http:\/\/(?!127)([-\w\d.]+):([0-9]+)\/\?token=([\w\d]+)'
+host_token_regex = 'http:\/\/(?!127)([-\w\d.]+):([0-9]+)\/(?:lab)\?token=([\w\d]+)'
 host_token_pattern = re.compile(host_token_regex)
 salloc_regex = 'salloc'
 salloc_pattern = re.compile(salloc_regex)
@@ -94,7 +104,7 @@ else:
 print(' '.join(jupyter_cmd))
 print('')
 
-for line in subprocess.run(jupyter_cmd, universal_newlines=True, check=True):
+for line in execute_capture_stderrout(jupyter_cmd):
 
     if args.verbose == True:
         print(line, end="")
@@ -110,6 +120,7 @@ for line in subprocess.run(jupyter_cmd, universal_newlines=True, check=True):
 
     #check if the host/port/token from stderr is in the line
     host_token_match = re.search(host_token_pattern,line)
+    print(host_token_match)
     if host_token_match != None:
         host,port,token = host_token_match.group(1,2,3)
         #debug, print match:
@@ -149,5 +160,3 @@ except KeyboardInterrupt:
     except OSError:
         pass
     p.wait()
-
-
