@@ -85,7 +85,7 @@ print('')
 
 
 #set-up regex for capturing host & token
-host_token_regex = 'http:\/\/(?!127)([-\w\d.]+):([0-9]+)\/(?:lab)\?token=([\w\d]+)'
+host_token_regex = 'http:\/\/(?!127)([-\w\d.]+):([0-9]+)\/(?:lab)?\?token=([\w\d]+)'
 host_token_pattern = re.compile(host_token_regex)
 salloc_regex = 'salloc'
 salloc_pattern = re.compile(salloc_regex)
